@@ -14,7 +14,7 @@ public interface ReminderNotificationListenerServiceInterface {
      *
      * @param packageName the package name of the application which posted notification
      */
-    void onNotificationPosted(String packageName);
+    void onNotificationPosted(String packageName, String category, String text);
 
     /**
      * The method which should be called when any notification is removed
