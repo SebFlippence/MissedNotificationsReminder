@@ -36,7 +36,7 @@ public abstract class AbstractReminderNotificationListenerService extends Notifi
             return;
         }
         Timber.d("onNotificationPosted: for package %1$s, key %2$s, when %3$s", sbn.getPackageName(), notificationKey(sbn), sbn.getNotification().when);
-        onNotificationPosted(sbn.getPackageName());
+        onNotificationPosted(sbn.getPackageName(), "", "");
     }
 
     @Override

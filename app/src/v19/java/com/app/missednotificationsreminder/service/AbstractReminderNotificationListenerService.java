@@ -35,10 +35,19 @@ public abstract class AbstractReminderNotificationListenerService extends Notifi
             // fix weird NPE on some devices
             return;
         }
-        Notification notification = sbn.getNotification();
-        String text = notification.extras.getCharSequence("android.title").toString();
-        Timber.d("onNotificationPosted: for package %1$s, key %2$s, when %3$s, notification %4$s, category %5$s", sbn.getPackageName(), notificationKey(sbn), sbn.getNotification().when, notification.extras, notification.category);
-        onNotificationPosted(sbn.getPackageName(), notification.category, text);
+
+        String category = "";
+        String text = "";
+        try {
+            Notification notification = sbn.getNotification();
+            category = notification.category;
+            text = notification.extras.getCharSequence("android.title").toString();
+            Timber.d("onNotificationPosted: for package %1$s, key %2$s, when %3$s, notification %4$s, category %5$s", sbn.getPackageName(), notificationKey(sbn), sbn.getNotification().when, notification.extras, notification.category);
+        } catch (Exception e) {
+            Timber.d("onNotificationPosted: Error! for package %1$s, key %2$s, when %3$s", sbn.getPackageName(), notificationKey(sbn), sbn.getNotification().when);
+        }
+
+        onNotificationPosted(sbn.getPackageName(), category, text);
     }
 
     @Override

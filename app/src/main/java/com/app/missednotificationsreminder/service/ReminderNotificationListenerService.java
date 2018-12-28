@@ -212,7 +212,7 @@ public class ReminderNotificationListenerService extends AbstractReminderNotific
             switch (msg.what) {
                 case CHECK_WAKING_CONDITIONS_MSG:
                     Timber.d("CHECK_WAKING_CONDITIONS_MSG message received");
-                    checkWakingConditions("");
+                    checkWakingConditions("", "", "");
                     break;
                 case STOP_WAKING_MSG:
                     Timber.d("STOP_WAKING_MSG message received");
@@ -378,7 +378,7 @@ public class ReminderNotificationListenerService extends AbstractReminderNotific
     /**
      * Check whether the waking alarm should be scheduled or no
      */
-    private void checkWakingConditions(String notificationText) {
+    private void checkWakingConditions(String packageName, String category, String notificationText) {
         try {
             Timber.d("checkWakingConditions");
             if (mActive.get()) {
@@ -413,7 +413,7 @@ public class ReminderNotificationListenerService extends AbstractReminderNotific
                 if (limitReminderRepeats.get()) {
                     mRemainingRepeats = reminderRepeats.get();
                 }
-                scheduleNextWakeup(notificationText);
+                scheduleNextWakeup(packageName, category, notificationText);
             } else {
                 Timber.d("checkWakingConditions: there are no notifications from selected applications to periodically remind");
             }
@@ -437,7 +437,7 @@ public class ReminderNotificationListenerService extends AbstractReminderNotific
         if (mNotificationLargeIcon == null) {
             mNotificationLargeIcon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
         }
-        String contentText = (text == "") ? getText(R.string.dismiss_notification_text).toString() : text;
+        String contentText = (text.isEmpty()) ? getText(R.string.dismiss_notification_text).toString() : text;
         Timber.d("createDismissNotification(): showing notification: %1$s", contentText);
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this, null)
@@ -454,7 +454,7 @@ public class ReminderNotificationListenerService extends AbstractReminderNotific
     /**
      * Schedule wakeup alarm for the sound notification pending intent
      */
-    private void scheduleNextWakeup(String notificationText) {
+    private void scheduleNextWakeup(String packageName, String category, String notificationText) {
         long scheduledTime = 0;
         if (limitReminderRepeats.get() && mRemainingRepeats-- <= 0) {
             Timber.d("scheduleNextWakeup: ran out of reminder repeats, stopping");
@@ -462,7 +462,7 @@ public class ReminderNotificationListenerService extends AbstractReminderNotific
             return;
         }
 
-        if (createDismissNotification.get()) {
+        if (createDismissNotification.get() && packageName.contains("calendar") && category.contains("reminder") && !notificationText.isEmpty()) {
             createDismissNotification(notificationText);
         }
         if (schedulerEnabled.get()) {
@@ -581,7 +581,7 @@ public class ReminderNotificationListenerService extends AbstractReminderNotific
         mHandler.post(() -> {
             Timber.d("onNotificationPosted() called with: packageName = %1$s, category = %2$s, text = %3$s",
                     packageName, category, text);
-            if (mReady.get() && selectedApplications.get().contains(packageName) && category.contains("reminder")) {
+            if (mReady.get() && selectedApplications.get().contains(packageName)) {
                 // check waking conditions only if notification has been posted for the monitored application to prevent
                 // mRemainingRepeats overcome in case reminder is already stopped but new notification arrived from any not
                 // monitored app
@@ -590,7 +590,7 @@ public class ReminderNotificationListenerService extends AbstractReminderNotific
                     mRemainingRepeats = reminderRepeats.get();
                 }
                 Timber.d("onNotificationPosted(): is going to call: checkWakingConditions()");
-                checkWakingConditions(text);
+                checkWakingConditions(packageName, category, text);
             }
         });
     }
@@ -774,7 +774,7 @@ public class ReminderNotificationListenerService extends AbstractReminderNotific
                 }
                 // notify listeners abot reminder completion
                 mEventBus.send(RemindEvents.REMINDER_COMPLETED);
-                scheduleNextWakeup("");
+                scheduleNextWakeup("", "", "");
             });
         }
 

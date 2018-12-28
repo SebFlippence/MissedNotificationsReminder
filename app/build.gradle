@@ -99,6 +99,10 @@ android {
     }
 
     productFlavors {
+        v19 {
+            minSdkVersion 19
+            versionCode getVersionCode(19)
+        }
         v18 {
             minSdkVersion 18
             versionCode getVersionCode(18)
@@ -106,9 +110,6 @@ android {
         v14 {
             minSdkVersion 14
             versionCode getVersionCode(14)
-        }
-        v26 {
-            minSdkVersion 26
         }
     }
 
